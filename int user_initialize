@@ -1,0 +1,60 @@
+#define PRO_USE_VAR_ARGS
+
+#include <ProToolkit.h>
+#include <ProNotify.h>
+#include <ProMdl.h>
+#include <ProMessage.h>
+#include <ProWstring.h>
+
+ProError MyFunctionNewObject(
+	ProMdlType type_model,
+	int sub_type,
+	ProMdlName r_model_name,
+	ProBoolean* r_allow_override
+)
+{
+	ProError err;
+	ProMdl mdl;
+	ProMdlName current_name;
+
+	err = ProMdlCurrentGet(&mdl);
+
+	if (err == PRO_TK_NO_ERROR)
+	{
+		if (ProMdlNameGet(mdl, current_name) == PRO_TK_NO_ERROR)
+		{
+			ProWstringCopy(current_name, r_model_name, PRO_VALUE_UNUSED);
+		}
+		else
+		{
+			ProWstringCopy(L"NEW_MODEL", r_model_name, PRO_VALUE_UNUSED);
+		}
+	}
+	else
+	{
+		// если нет текущей модели
+		ProWstringCopy(L"NEW_MODEL", r_model_name, PRO_VALUE_UNUSED);
+	}
+
+	*r_allow_override = PRO_B_TRUE;
+
+	return PRO_TK_NO_ERROR;
+}
+
+
+
+
+int user_initialize()
+{
+	ProError err;
+
+	err = ProNotificationSet(
+		PRO_MODEL_CREATE_PRE,
+		(ProFunction)MyFunctionNewObject
+	);
+
+	return 0;
+}
+
+void user_terminate()
+{}
